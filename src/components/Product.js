@@ -22,6 +22,8 @@ function Product({ id, price, description, category, image, title }) {
       category,
       image,
       title,
+      hasPrime,
+      rating,
     };
     //send the product as an action/payload to the REDUX STORE.. the basket slice
     dispatch(addToBasket(product));
@@ -54,10 +56,13 @@ function Product({ id, price, description, category, image, title }) {
           ))}
       </div>
 
-      <p className="text-xs my-2 line-clamp">{description}</p>
+      <p className="text-xs my-2 line-clamp-2">{description}</p>
 
       <div className="mb-5">
-        <p>$ {price}</p>
+        <p>
+        $
+        {price}
+        </p>
       </div>
 
       {hasPrime && (
