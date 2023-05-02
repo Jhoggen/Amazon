@@ -1,22 +1,29 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   MagnifyingGlassIcon,
   ShoppingCartIcon,
   Bars3Icon,
 } from "@heroicons/react/24/outline";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 function Header() {
+  const { data: session } = useSession();
+
   return (
     <header>
       <div className="flex items-center bg-amazon_blue p1 flex-grow py-2">
         <div className="mt-2 mx-6 flex items-center flex-grow sm:flex-grow-0">
-          <Image
-            className="object-contain cursor-pointer"
-            src="https://links.papareact.com/f90"
-            width={150}
-            height={40}
-          />
+          <Link href={"/"}>
+            <Image
+              className="object-contain cursor-pointer"
+              src="https://links.papareact.com/f90"
+              width={150}
+              height={40}
+              alt="imga"
+            />
+          </Link>
         </div>
 
         <div className="hidden sm:flex bg-yellow-400 hover:bg-yellow-500 items-center h-10 rounded-md flex-grow cursor-pointer">
@@ -30,14 +37,21 @@ function Header() {
 
         {/* Right */}
         <div className="text-white flex items-center text-xs space-x-6 mx-6 whitespace-nowrap">
-          <div className="link">
-            <p>Hello Jacob Hoggen</p>
-            <p className="font-extrabold md:text-small">Account & Lists</p>
-          </div>
+          {session ? (
+            <div onClick={() => signOut()} className="link">
+              <p>Hello {session.user.name}</p>
+              <p className="font-extrabold md:text-small">Account & Lists</p>
+            </div>
+          ) : (
+            <div onClick={() => signIn()} className="link">
+              <p>Login</p>
+              <p className="font-extrabold md:text-small">Account & Lists</p>
+            </div>
+          )}
 
           <div className="link">
             <p>Return</p>
-            <p className="font-extrabold md:text-small">Orders</p>
+            <p className="font-extrabold md:text-small">& Orders</p>
           </div>
 
           <div className="link relative flex items-center">
