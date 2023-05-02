@@ -12,16 +12,16 @@ export default function Home({ products }) {
         </Head>
         <Header />
 
-        <div className="max-w-screen-2xl mx-auto">
+        <main className="max-w-screen-2xl mx-auto">
           <Banner />
           <ProductFeed products={products} />
-        </div>
+        </main>
       </div>
     </>
   );
 }
 
-export const getServerSideProps = async ({ context }) => {
+export const getStaticProps = async ({ context }) => {
   const products = await fetch("https://fakestoreapi.com/products").then(
     (res) => res.json()
   );
