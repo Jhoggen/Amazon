@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import StarIcon from "@heroicons/react/24/solid/StarIcon";
 import { useDispatch } from "react-redux";
@@ -8,10 +8,15 @@ const MAX_RATING = 5;
 const MIN_RATING = 1;
 
 function Product({ id, price, description, category, image, title }) {
-  const [rating] = useState(
-    Math.floor(Math.random() * (MAX_RATING - MIN_RATING + 1)) + MIN_RATING
-  );
-  const [hasPrime] = useState(Math.random() < 0.5);
+  const [hasPrime, setHasPrime] = useState(true);
+  const [rating, setRating] = useState(1);
+
+  useEffect(() => {
+    setRating(
+      Math.floor(Math.random() * (MAX_RATING - MIN_RATING + 1)) + MIN_RATING
+    );
+    setHasPrime(Math.random() < 0.5);
+  }, []);
 
   const dispatch = useDispatch();
   const addItemToBasket = () => {
@@ -59,10 +64,7 @@ function Product({ id, price, description, category, image, title }) {
       <p className="text-xs my-2 line-clamp-2">{description}</p>
 
       <div className="mb-5">
-        <p>
-        $
-        {price}
-        </p>
+        <p>${price}</p>
       </div>
 
       {hasPrime && (
