@@ -1,16 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Header from "../components/Header";
 import { getSession, useSession } from "next-auth/react";
 import moment from "moment";
-import {
-  collection,
-  orderBy,
-  getDocs,
-  query,
-  onSnapshot,
-  getDoc,
-  doc,
-} from "firebase/firestore";
+import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import db from "../../firebase";
 
 function Orders({ orders }) {
@@ -38,47 +30,43 @@ export default Orders;
 
 export async function getServerSideProps(context) {
   const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-  //GET LOGGED IN USERS CREDS
+  // GET LOGGED IN USER'S CREDS
   const session = await getSession(context);
 
   if (!session) {
+    console.log("NO SESSION");
     return {
       props: {},
     };
   }
 
-  // get firebase collections
-    const ordersCollection = collection(
-      db,
-      "users",
-      session.user.email,
-      "orders"
-    )
-    const queryOrders = query(
-      ordersCollection,
-      orderBy("timestamp", "desc")
-    );
-    const ordersSnapshot = await getDocs(queryOrders);
-    console.log("CONSOLE.LOG:", ordersSnapshot);
+  console.log("Fetching orders from Firestore...");
+  // Get orders from Firestore for the logged-in user
+  const ordersRef = collection(db, "users", session.user.email, "orders");
+  const q = query(ordersRef, orderBy("timestamp", "desc"));
+  const snapshot = await getDocs(q);
 
-    const orders = [];
-    for (const order of ordersSnapshot.docs) {
-      const items = await stripe.checkout.session.listLineItems(order.id, {
-        limit: 100,
-      });
-      orders.push({
-        id: order.id,
-        amount: order.data().amount,
-        amountShipping: order.data().amount_shipping,
-        images: order.data().images,
-        timestamp: moment(order.data().timestamp.toDate()).unix(),
-        items: items.data,
-      });
-    }
+  console.log("Processing orders...");
+  const orders = await Promise.all(
+    snapshot.docs.map(async (order) => ({
+      id: order.id,
+      amount: order.data().amount,
+      amountShipping: order.data().amount_shipping,
+      images: order.data().images,
+      timestamp: moment(order.data().timestamp.toDate().unix()),
+      items: (
+        await stripe.checkout.sessions.listLineItems(order.id, {
+          limit: 100,
+        })
+      ).data,
+    }))
+  );
 
+  console.log(`Fetched ${orders.length} orders from Firestore.`);
+  if (session) {
+    console.log(session.user.email);
     return {
-      props: {
-        orders: JSON.stringify(orders),
-      },
+      props: { orders },
     };
+  }
 }
